@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: .
+    volumes:
+      - ./dockervenv:/src/.venv
+      - .:/src
+    ports:
+      - '8000:8000'
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      PYTHONPATH: /src
+
+  db:
+    image: mysql:8.0
+    restart: always
+    platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: ${MYSQL_ROOT_HOST}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - '33306:3306'
+volumes:
+  mysql-data:

@@ -1,0 +1,15 @@
+
+__pycache__/
+
+# Virtual environment
+.venv/
+
+# Environment variables
+.env
+
+# Logs and output
+*.log
+*.out
+
+# MySQL dump files
+*.sql
