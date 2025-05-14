@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 from app.router import auth, user, blog
+from app.db.migrate_db import reset_database
 
+app = FastAPI(
+    title="FastAPI NCP for blog web app",
+    description="Blog posting and NCM mail function service",
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
-app = FastAPI()
-
-app.include_router(auth.router, tags=['Authentication'])
 app.include_router(user.router, tags=['User'])
 app.include_router(blog.router, tags=['Blog'])
 
@@ -12,3 +17,8 @@ app.include_router(blog.router, tags=['Blog'])
 @app.get("/")
 async def root():
     return {"Hello": "World"}
+
+# Initialize the database when the server starts
+@app.on_event("startup")
+def init_db():
+    reset_database()

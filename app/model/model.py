@@ -10,11 +10,11 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), nullable=False)
-    email = Column(String(50), unique = True)
+    email = Column(String(50), unique = True, index=True)
     password = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    posts = relationship("Post", back_populates="author_user")
+    posts = relationship("Post", back_populates="author")
     comments = relationship("Comment", back_populates="commenter")
 
 class Post(Base):
@@ -27,7 +27,7 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
-    author_user = relationship("User", back_populates="posts")
+    author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="post")
 
 class Comment(Base):

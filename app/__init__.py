@@ -1,1 +1,1 @@
-# user table
+# app/__init__.py

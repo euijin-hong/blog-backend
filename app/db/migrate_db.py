@@ -1,20 +1,20 @@
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, declarative_base
-import os
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import sessionmaker
 from app.model.model import Base
+from app.config import INIT_DATABASE_URL
 
-DB_USER = os.getenv('DB_USER', 'root')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'Passw02d!')
-DB_HOST = os.getenv('DB_HOST', 'db')
-DB_PORT = os.getenv('DB_PORT', '3306')
-DB_NAME = os.getenv('DB_NAME', 'backend')
-
-DB_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
-
-
-engine = create_engine(DB_URL, echo=True)
+engine = create_engine(INIT_DATABASE_URL, echo=True)
+SessionLocal = sessionmaker(bind=engine)
 
 def reset_database():
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+
+    if "users" in existing_tables:
+        print("✅ Database already initialized. Skipping reset.")
+        return
+    
+    print("📦 Resetting database...")
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 

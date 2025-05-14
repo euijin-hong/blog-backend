@@ -1,38 +1,66 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-import app.schema.blog as blog_schema
-import app.crud.blog as blog_crud
-import app.model.model as model
-from app.db.db import get_db
+from app.schema.blog import BlogPostSummary, ReadBlogPost, CreateBlogPost, UpdateBlogPost
+from app.model.model import User
+from app.services.post_service import PostService, get_post_service
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(
      prefix="/blog"
 )
 
-
-@router.get("/", response_model=list[blog_schema.BlogPostSummary])
-async def get_blog(db: AsyncSession = Depends(get_db)):
-    return await blog_crud.get_all_blog_posts(db)
+# Get all blog posts
+@router.get("/", 
+            response_model=list[BlogPostSummary],
+            summary="Retreive all blog posts",
+            description="This router retreives all blog posts from the DB."
+            )
+async def get_posts(post_service: PostService = Depends(get_post_service)):
+    return await post_service.get_all_posts()
     
+# Get one blog post
+@router.get("/{post_id}", 
+            response_model=ReadBlogPost,
+            summary="Return one blog post",
+            description="This return the blog post corresponding to the post_id."
+            )
+async def get_post(post_id: int,
+                   post_service: PostService = Depends(get_post_service)):
+    return await post_service.get_post(post_id)
 
-@router.get("/{blog_id}", response_model=blog_schema.ReadBlogPost)
-async def get_one_blog(blog_id: int):
-    return {"id": blog_id,
-            "title": "blog title",
-            "content": "content",
-            "author": "EJ Hong",
-            "created_at": None}
-
-@router.post("/create", response_model=blog_schema.ReadBlogPost, status_code=status.HTTP_201_CREATED)
-async def create_blog_post(blog_post: blog_schema.CreateBlogPost, db: AsyncSession=Depends(get_db)):
-    new_post = await blog_crud.create_blog_post(db, blog_post) 
-    db.add(new_post)
-    await db.commit()
-    await db.refresh(new_post)
+# Create a blog post
+@router.post("/create", 
+             response_model=ReadBlogPost, 
+             summary="Create a new blog post",
+             description="This creates new blog post and save it to the DB."
+             )
+async def create_post(post: CreateBlogPost, 
+                      post_service: PostService = Depends(get_post_service),
+                      current_user: User = Depends(get_current_user)):
+    new_post = await post_service.create_post(post, current_user)
     return new_post
 
-@router.patch("/update", response_model=blog_schema.UpdateBlogPost)
-async def update_blog_post():
-    return {"title": None, 
-            "content": "content"}
+# Update a blog post
+@router.put("/{post_id}", 
+            response_model=ReadBlogPost,
+            summary="Update an existing blog post",
+            description="This updates the existing blog post corresponding to the post_id."
+            )
+async def update_blog_post(post_id: int, 
+                           post_update: UpdateBlogPost, 
+                           post_service: PostService = Depends(get_post_service),
+                           current_user: User = Depends(get_current_user)):
+    updated_post = await post_service.update_post(post_id, post_update, current_user)
+    return updated_post
 
+
+# Delete a blog post
+@router.delete("/{post_id}",
+               summary="Delete a blog post",
+               description="This deletes an existing blog post corresponding to the post_id."
+               )
+async def delete_post(post_id: int,
+                      post_service: PostService = Depends(get_post_service),
+                      current_user: User = Depends(get_current_user)):
+    await post_service.delete_post(post_id, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
