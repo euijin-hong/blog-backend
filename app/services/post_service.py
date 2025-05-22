@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.engine import Result
 from app.db.db import get_db
 
-from app.schema.blog import BlogPostSummary, ReadBlogPost, CreateBlogPost, UpdateBlogPost
+from app.schema.blog import BlogPost, ReadBlogPost, CreateBlogPost, UpdateBlogPost
 from app.model.model import User, Post
 
 from typing import List
@@ -25,21 +25,22 @@ class PostService:
         await self.db.refresh(new_post)
         return new_post
     
-    async def get_all_posts(self) -> List[BlogPostSummary]:
+    async def get_all_posts(self) -> List[BlogPost]:
         query= (
-            select(Post).options(selectinload(Post.author_user))
+            select(Post).options(selectinload(Post.author))
         )
         result: Result = await self.db.execute(query)
         posts = result.scalars().all()
 
-        return [BlogPostSummary(
+        return [BlogPost(
         id = post.post_id,
         title = post.title,
-        author = post.author_user.name,
+        content = post.content,
+        author_name = post.author.name,
         created_at = post.updated_at
     ) for post in posts]
 
-    async def get_post(self, post_id: int) -> BlogPostSummary:
+    async def get_post(self, post_id: int) -> BlogPost:
         query = (
             select(Post).where(Post.post_id == post_id)
         )

@@ -8,10 +8,11 @@ class BlogBaseModel(BaseModel):
         json_encoders={datetime: lambda v: v.isoformat()}
     )
 
-class BlogPostSummary(BlogBaseModel):
+class BlogPost(BlogBaseModel):
     id: int
     title: str
-    author_id: int
+    content: str
+    author_name: str
     created_at: datetime | None = Field(default=None)
 
 class ReadBlogPost(BlogBaseModel):

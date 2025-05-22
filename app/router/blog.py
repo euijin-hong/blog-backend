@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schema.blog import BlogPostSummary, ReadBlogPost, CreateBlogPost, UpdateBlogPost
+from app.schema.blog import BlogPost, ReadBlogPost, CreateBlogPost, UpdateBlogPost
 from app.model.model import User
 from app.services.post_service import PostService, get_post_service
 from app.dependencies.auth import get_current_user
@@ -11,7 +11,7 @@ router = APIRouter(
 
 # Get all blog posts
 @router.get("/", 
-            response_model=list[BlogPostSummary],
+            response_model=list[BlogPost],
             summary="Retreive all blog posts",
             description="This router retreives all blog posts from the DB."
             )

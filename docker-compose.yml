@@ -1,4 +1,9 @@
 services:
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - '6379:6379'
   db:
     image: mysql:8.0
     restart: always
@@ -34,6 +39,7 @@ services:
       PYTHONPATH: /src
     depends_on:
       - db
+      - redis
 
 volumes:
   mysql-data:

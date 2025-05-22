@@ -8,12 +8,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.db import get_db
 from app.utils.auth import verify_token
 from app.model.model import User
+from app.services.token_service import TokenService
 
 bearer_scheme = HTTPBearer()
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme), 
-                     db: AsyncSession = Depends(get_db)):
+async def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme), 
+        db: AsyncSession = Depends(get_db)):
+    
     token = credentials.credentials
+
+    if TokenService.is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=401,
+            detail="Expired token",
+            headers={"WWW-Authenticate": "bearer"}
+        )
     payload = verify_token(token)
 
     if payload is None:
